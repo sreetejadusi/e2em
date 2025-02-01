@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412453367706",
+    "project_id": "e2em-2176c",
+    "storage_bucket": "e2em-2176c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412453367706:android:cfe879e68b786aa4f81423",
+        "android_client_info": {
+          "package_name": "e2em.com.ezing"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6ubsOdKzHhH00DyqEThAuaKzmvLxS2M4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
