@@ -5,6 +5,7 @@ import 'package:ezing/presentation/providers/bluetooth_provider.dart';
 import 'package:ezing/presentation/providers/data_provider.dart';
 import 'package:ezing/presentation/providers/location_provider.dart';
 import 'package:ezing/presentation/providers/saved_devices_provider.dart';
+import 'package:ezing/presentation/providers/swap_station_provider.dart';
 import 'package:ezing/presentation/screens/login_screen.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/screens/start_screen.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
     ChangeNotifierProvider(create: (_) => SavedDevicesProvider()),
     ChangeNotifierProvider(create: (_) => UserDataProvider()),
     ChangeNotifierProvider(create: (_) => LocationProvider()),
+    ChangeNotifierProvider(create: (_) => SwapStationProvider()),
   ], child: const Ezing()));
 }
 

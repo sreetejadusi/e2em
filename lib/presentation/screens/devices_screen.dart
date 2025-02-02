@@ -11,6 +11,7 @@ import 'package:ezing/presentation/providers/location_provider.dart';
 import 'package:ezing/presentation/providers/saved_devices_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/widgets/components.dart';
+import 'package:ezing/presentation/widgets/logo.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State, Center;
 import 'package:provider/provider.dart';
@@ -75,6 +76,44 @@ class _DevicesScreenState extends State<DevicesScreen> {
         return true;
       },
       child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          title: Logo(
+            width: MediaQuery.of(context).size.width * 0.25,
+          ),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  if (!bp.bluetoothOn) {
+                    FlutterBlueElves.instance
+                        .androidOpenBluetoothService((isOk) {
+                      debugPrint(isOk
+                          ? "The user agrees to turn on the Bluetooth function"
+                          : "The user does not agrees to turn on the Bluetooth function");
+                    });
+                  }
+                },
+                icon: Icon(
+                  Icons.bluetooth,
+                  color: bp.bluetoothOn ? Colors.green : Colors.red,
+                )),
+            IconButton(
+                onPressed: () {
+                  if (!bp.gpsOn) {
+                    FlutterBlueElves.instance
+                        .androidOpenLocationService((isOk) {
+                      debugPrint(isOk
+                          ? "The user agrees to turn on the positioning function"
+                          : "The user does not agree to enable the positioning function");
+                    });
+                  }
+                },
+                icon: Icon(
+                  Icons.location_on,
+                  color: bp.gpsOn ? Colors.green : Colors.red,
+                )),
+          ],
+        ),
         backgroundColor: Colors.transparent,
         //bottomNavigationBar:
         floatingActionButton: (bp.gpsOn && bp.bluetoothOn)

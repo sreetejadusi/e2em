@@ -52,6 +52,42 @@ class _HomeScreenState extends State<HomeScreen> {
     double h = MediaQuery.of(context).size.height;
     double w = MediaQuery.of(context).size.width - sidePadding * 2;
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        title: Logo(
+          width: MediaQuery.of(context).size.width * 0.25,
+        ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                if (!bp.bluetoothOn) {
+                  FlutterBlueElves.instance.androidOpenBluetoothService((isOk) {
+                    debugPrint(isOk
+                        ? "The user agrees to turn on the Bluetooth function"
+                        : "The user does not agrees to turn on the Bluetooth function");
+                  });
+                }
+              },
+              icon: Icon(
+                Icons.bluetooth,
+                color: bp.bluetoothOn ? Colors.green : Colors.red,
+              )),
+          IconButton(
+              onPressed: () {
+                if (!bp.gpsOn) {
+                  FlutterBlueElves.instance.androidOpenLocationService((isOk) {
+                    debugPrint(isOk
+                        ? "The user agrees to turn on the positioning function"
+                        : "The user does not agree to enable the positioning function");
+                  });
+                }
+              },
+              icon: Icon(
+                Icons.location_on,
+                color: bp.gpsOn ? Colors.green : Colors.red,
+              )),
+        ],
+      ),
       body: Container(
         color: Colors.white,
         child: Scaffold(
