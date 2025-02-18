@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, use_super_parameters, unnecessary_overrides, no_leading_underscores_for_local_identifiers, unused_import, empty_catches
+
 import 'package:ezing/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,17 +46,14 @@ class _NoDeviceControlScreenState extends State<NoDeviceControlScreen>
         int _mode = int.parse(m[1].toString());
         int _battery = int.parse(m[2].toString());
         if (_battery >= 0 && _battery <= 100) {
-          print(_battery);
         } else {}
         if (_mode == 1 ||
             _mode == 2 ||
             _mode == 3 ||
             _mode == 4 ||
             _mode == 5) {
-          print(_mode);
         } else {}
       } catch (e) {
-        print(e);
       }
     }
   }
@@ -79,7 +78,6 @@ class _NoDeviceControlScreenState extends State<NoDeviceControlScreen>
         setState(() {
           mode = modeNum;
         });
-        print("$cycleId,$mn");
       },
     );
   }

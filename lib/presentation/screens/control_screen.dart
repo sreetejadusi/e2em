@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:ezing/data/functions/converters.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/screens/home_screen.dart';
@@ -168,6 +167,7 @@ class _ControlScreenState extends State<ControlScreen>
   @override
   Widget build(BuildContext context) {
     BluetoothDevicesProvider bdp = context.watch<BluetoothDevicesProvider>();
+    bdp.listenToBLEData(context);
     return HomeScreen(
       hasDevice: true,
       deviceName: bdp.connectedDeviceName ?? "",

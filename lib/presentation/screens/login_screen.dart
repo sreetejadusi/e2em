@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, no_wildcard_variable_uses, prefer_const_constructors, unused_import
+
 import 'package:ezing/main.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/widgets/logo.dart';

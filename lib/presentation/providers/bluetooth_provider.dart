@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_blue_elves/flutter_blue_elves.dart';
-import 'package:provider/provider.dart';
 
 class BluetoothProvider with ChangeNotifier {
   bool get android => _android;

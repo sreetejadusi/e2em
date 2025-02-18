@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, use_super_parameters, unnecessary_const, prefer_const_literals_to_create_immutables
+
 import 'package:ezing/data/datasource/mongodb.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
@@ -6,14 +8,10 @@ import 'package:ezing/presentation/providers/saved_devices_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/screens/control_screen.dart';
 import 'package:ezing/presentation/screens/devices_screen.dart';
-import 'package:ezing/presentation/screens/home_screen.dart';
 import 'package:ezing/presentation/screens/no_device_control_screen.dart';
 import 'package:ezing/presentation/screens/profile_screen.dart';
-import 'package:ezing/presentation/widgets/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_blue_elves/flutter_blue_elves.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class Start extends StatefulWidget {
@@ -127,22 +125,22 @@ class _StartState extends State<Start> {
                       showUnselectedLabels: false,
                       onTap: onTabTapped,
                       elevation: 0,
-                      selectedItemColor: Color(0xFF56bb45),
+                      selectedItemColor: const Color(0xFF56bb45),
                       unselectedItemColor: Colors.white,
                       showSelectedLabels: false,
                       iconSize: 30,
                       //selectedItemColor: firstAccentColor,
                       backgroundColor: Colors.black54,
                       items: [
-                        BottomNavigationBarItem(
+                        const BottomNavigationBarItem(
                           icon: Icon(Icons.dashboard),
                           label: "Devices",
                         ),
-                        BottomNavigationBarItem(
+                        const BottomNavigationBarItem(
                           icon: Icon(Icons.home),
                           label: "Home",
                         ),
-                        BottomNavigationBarItem(
+                        const BottomNavigationBarItem(
                           icon: Icon(Icons.settings),
                           label: "Settings",
                         ),

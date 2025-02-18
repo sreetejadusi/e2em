@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_blue_elves/flutter_blue_elves.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
 
 class DataProvider with ChangeNotifier {
   String get homeName => _homeName;

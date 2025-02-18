@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:ezing/data/models/saved_device.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mongo_dart/mongo_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
 
 class SavedDevicesProvider extends ChangeNotifier {
   List<SavedDeviceModel> get devices => _devices;

@@ -1,5 +1,9 @@
+// ignore_for_file: unused_import
+
 import 'package:ezing/data/datasource/mongodb.dart';
 import 'package:ezing/firebase_options.dart';
+import 'package:ezing/presentation/providers/battery_swap_provider.dart';
+import 'package:ezing/presentation/providers/ble_data_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
 import 'package:ezing/presentation/providers/data_provider.dart';
@@ -24,11 +28,17 @@ Future<void> main() async {
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (_) => BluetoothProvider()),
     ChangeNotifierProvider(create: (_) => BluetoothDevicesProvider()),
+    ChangeNotifierProvider(create: (_) => BLEDataProvider()),
     ChangeNotifierProvider(create: (_) => DataProvider()),
     ChangeNotifierProvider(create: (_) => SavedDevicesProvider()),
     ChangeNotifierProvider(create: (_) => UserDataProvider()),
     ChangeNotifierProvider(create: (_) => LocationProvider()),
     ChangeNotifierProvider(create: (_) => SwapStationProvider()),
+    ChangeNotifierProxyProvider3<BluetoothDevicesProvider,BluetoothProvider,BLEDataProvider,BatterySwapProvider>(
+      create: (context) => BatterySwapProvider(context.read<BluetoothDevicesProvider>(),context.read<BluetoothProvider>(),context.read<BLEDataProvider>()),
+      update: (context, _bleProvider, _bluetoothProvider, _bleDataProvider, batterySwapProvider) =>
+          batterySwapProvider!.update(_bleProvider, _bluetoothProvider, _bleDataProvider),
+    ),
   ], child: const Ezing()));
 }
 
@@ -43,7 +53,7 @@ class Ezing extends StatelessWidget {
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
-          seedColor: Color(0xFF56BB45),
+          seedColor: const Color(0xFF56BB45),
         ),
       ),
       darkTheme: ThemeData(
@@ -51,10 +61,10 @@ class Ezing extends StatelessWidget {
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
           brightness: Brightness.light,
-          seedColor: Color(0xFF56BB45),
+          seedColor: const Color(0xFF56BB45),
         ),
       ),
-      home: Entry(),
+      home: const Entry(),
     );
   }
 }
