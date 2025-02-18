@@ -1,4 +1,5 @@
 import 'package:ezing/main.dart';
+import 'package:ezing/presentation/providers/battery_swap_provider.dart';
 import 'package:ezing/presentation/providers/swap_station_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/screens/battery_swap_screen.dart';
@@ -12,6 +13,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     UserDataProvider userDataProvider = context.watch<UserDataProvider>();
+    BatterySwapProvider batterySwapProvider =
+        context.watch<BatterySwapProvider>();
     SwapStationProvider swapStationProvider =
         context.watch<SwapStationProvider>();
     return Scaffold(
@@ -61,7 +64,9 @@ class ProfileScreen extends StatelessWidget {
               // Navigator.of(context).push(MaterialPageRoute(
               //   builder: (context) => BatterySwapScreen(),
               // ));
-              showBatterySwapBottomSheet(context);
+              if(await batterySwapProvider.canSwapBattery(userDataProvider.user!.phone, context)){
+                showBatterySwapBottomSheet(context);
+              }
             },
             title: Text('Swap Battery'),
             subtitle: Text('Swap your battery'),
