@@ -48,6 +48,7 @@ class _StartState extends State<Start> {
         bdp.scan(context);
       }
     });
+    bdp.changeTabIndex(1);
     setState(() {
       isLoading = false;
     });
@@ -85,8 +86,9 @@ class _StartState extends State<Start> {
           },
           //key: Key(csKey),
         ),
+        // StreamScreen()
       ] else ...[
-        const NoDeviceControlScreen(),
+        NoDeviceControlScreen()
       ],
       const ProfileScreen(),
     ];

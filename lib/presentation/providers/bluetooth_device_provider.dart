@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:ezing/presentation/providers/ble_data_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_elves/flutter_blue_elves.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -144,34 +147,36 @@ class BluetoothDevicesProvider with ChangeNotifier {
     });
   }
 
-  void listenToBLEData(BuildContext context) {
-    if (_connectedDevice == null) {
-      debugPrint("No device connected.");
-      return;
-    }
+  // void listenToBLEData(BuildContext context) {
+  //   if (_connectedDevice == null) {
+  //     debugPrint("No device connected.");
+  //     return;
+  //   }
 
-    try {
-      _connectedDevice!.deviceSignalResultStream.listen((deviceSignalResult) {
-        if (deviceSignalResult.data!.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Received Data: ${deviceSignalResult.data}",
-              ),
-            ),
-          );
-          context.read<BLEDataProvider>().logBLEData(
-                deviceSignalResult.data.toString(),
-                deviceSignalResult.uuid,
-              );
-        } else {
-          debugPrint("Received empty data from BLE.");
-        }
-      }).onError((e) {
-        debugPrint("Error fetching services: $e");
-      });
-    } catch (e) {
-      debugPrint("Error in listenToBLEData: $e");
-    }
-  }
+  //   try {
+  //     _connectedDevice!.deviceSignalResultStream.listen((deviceSignalResult) {
+  //       if (deviceSignalResult.data!.isNotEmpty) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text(
+  //               "Received Data: ${deviceSignalResult.data}",
+  //             ),
+  //           ),
+  //         );
+  //         context.read<BLEDataProvider>().logBLEData(
+  //               deviceSignalResult.data ??
+  //                   Uint8List.fromList([0, 0, 0, 0, 0]),
+  //             );
+  //       } else {
+  //         context.read<BLEDataProvider>().logBLEData(deviceSignalResult.data ??
+  //             Uint8List.fromList([0, 0, 0, 0, 0]));
+  //         debugPrint("Received empty data from BLE.");
+  //       }
+  //     }).onError((e) {
+  //       debugPrint("Error fetching services: $e");
+  //     });
+  //   } catch (e) {
+  //     debugPrint("Error in listenToBLEData: $e");
+  //   }
+  // }
 }

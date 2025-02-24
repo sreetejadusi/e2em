@@ -1,11 +1,10 @@
-// ignore_for_file: unused_local_variable, use_super_parameters, use_build_context_synchronously
-
 import 'package:ezing/data/datasource/mongodb.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
 import 'package:ezing/presentation/providers/location_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/widgets/logo.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_elves/flutter_blue_elves.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State, Center;
@@ -126,15 +125,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
 
-                              const SizedBox(height: 15),
+                              SizedBox(height: 15),
                               //textTile(widget.rangeLeft, "km", "Range Left"),
                               textTile1(widget.rangeLeft, "", "Total KM"),
-                              const SizedBox(height: 25),
+                              SizedBox(height: 25),
 
-                              const SizedBox(height: 15),
+                              SizedBox(height: 15),
                               //textTile(widget.rangeLeft, "km", "Range Left"),
                               textTile(widget.speed, "km/h", "Speed"),
-                              const SizedBox(height: 25),
+                              SizedBox(height: 25),
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 10),
@@ -197,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           widget.hasDevice
                               ? widget.deviceName
                               : "No Device Selected",
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF2a2a2a)),
@@ -212,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 {'km': '200', 'loc': 'sydney'},
                                                 where.eq('id', '12346'));
                                         ScaffoldMessenger.of(context)
-                                            .showSnackBar(const SnackBar(
+                                            .showSnackBar(SnackBar(
                                                 content:
                                                     Text('Updated Db Loc')));
                                         widget.disconnect();
@@ -230,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               'loc': 'delhi'
                                             }, where.eq('id', '12346'));
                                             ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
+                                                .showSnackBar(SnackBar(
                                                     content: Text(
                                                         'Updated Db Loc')));
                                             setState(() {});
@@ -241,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? Colors.redAccent
                                         : widget.connecting
                                             ? Colors.blueGrey
-                                            : const Color(0xFF56bb45),
+                                            : Color(0xFF56bb45),
 
                                     //Color(0xFF5d9451),
                                     borderRadius: BorderRadius.circular(5),
@@ -255,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           : widget.connecting
                                               ? "Connecting"
                                               : "Connect",
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontWeight: FontWeight.w500,
                                           color: Colors.white),
                                     ),
@@ -279,6 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final w = MediaQuery.of(context).size.width - sidePadding * 2 - 50;
     final h = MediaQuery.of(context).size.height;
     double height = h * 0.06;
+    double innerW = ((height * 2) - 6 - 6) / 6.5;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -296,25 +296,25 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 7),
               child: Stack(
                 children: [
                   Row(
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 3,
                       ),
                       Container(
-                        color: const Color(0xFFdcd8de),
+                        color: Color(0xFFdcd8de),
                       ),
-                      const SizedBox(
+                      SizedBox(
                         width: 3,
                       ),
                     ],
                   ),
                   Row(
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 4,
                       ),
                       Container(
@@ -331,15 +331,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? (w * leftPortion * 0.7 * (percentage / 100)) - 6
                             : 0,
                       ),
-                      const SizedBox(
+                      SizedBox(
                         width: 4,
                       ),
                     ],
                   ),
                   Center(
                     child: Text(
-                      "$percentage%",
-                      style: const TextStyle(
+                      percentage.toString() + "%",
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w500,
                       ),
@@ -398,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final bool flag = await udp.checkFlag();
             if (flag) {
               ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error. Contact Admin.')));
+                  SnackBar(content: Text('Error. Contact Admin.')));
             } else {
               widget.modeChange(num);
               lp.pushLocation(udp.user!.phone);
@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: w * 0.31,
             decoration: BoxDecoration(
               //color: Colors.white,
-              color: selected ? const Color(0xFF56bb45) : Colors.white,
+              color: selected ? Color(0xFF56bb45) : Colors.white,
               /*border:!selected?null: Border.all(
                   color: Color(0xFF5d9451),
                   width: 3.0,
@@ -422,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Container(
-                    margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                     child: Icon(icon,
                         color: selected ? Colors.white : Colors.black),
                   ),
@@ -454,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
           RichText(
             text: TextSpan(
               text: num.toString(),
-              style: const TextStyle(
+              style: TextStyle(
                 //color: Colors.black,
                 color: Color(0xFF2a2a2a),
                 fontWeight: FontWeight.w500,
@@ -462,8 +462,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               children: [
                 TextSpan(
-                  text: " $unit",
-                  style: const TextStyle(
+                  text: " " + unit,
+                  style: TextStyle(
                     color: Colors.black54,
                     fontWeight: FontWeight.w500,
                     fontSize: 25,
@@ -474,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black54,
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -496,7 +496,7 @@ class _HomeScreenState extends State<HomeScreen> {
           RichText(
             text: TextSpan(
               text: num.toString(),
-              style: const TextStyle(
+              style: TextStyle(
                 //color: Colors.black,
                 color: Color(0xFF2a2a2a),
                 fontWeight: FontWeight.w500,
@@ -504,8 +504,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               children: [
                 TextSpan(
-                  text: " $unit",
-                  style: const TextStyle(
+                  text: " " + unit,
+                  style: TextStyle(
                     color: Colors.black54,
                     fontWeight: FontWeight.w500,
                     fontSize: 25,
@@ -516,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black54,
               fontSize: 16,
               fontWeight: FontWeight.w500,

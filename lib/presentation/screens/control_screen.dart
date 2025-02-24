@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:ezing/data/functions/converters.dart';
+import 'package:ezing/presentation/providers/ble_data_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,9 @@ class _ControlScreenState extends State<ControlScreen>
   int battery = 0;
   int mode = 1;
   double rangeLeft = 0.0;
+  String vehicleID = "000";
+  int a = 0;
+  int b = 0;
   String cycleId = "000";
 
   List<BleService> services = [];
@@ -38,7 +43,6 @@ class _ControlScreenState extends State<ControlScreen>
   String name = "------";
   double velocity = 0;
   GeolocatorPlatform locator = GeolocatorPlatform.instance;
-
   Future<void> locationAccess() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       await Geolocator.openLocationSettings();
@@ -140,10 +144,20 @@ class _ControlScreenState extends State<ControlScreen>
     if (m.length >= 3) {
       try {
         setState(() {
-          mode = int.tryParse(m[1]) ?? 1;
+          // mode = int.tryParse(m[1]) ?? 1;
+          vehicleID = m[0];
+          rangeLeft = double.tryParse(m[1]) ?? 0.0;
           battery = (int.tryParse(m[2]) ?? 0).clamp(0, 100);
-          rangeLeft = double.tryParse(m[0]) ?? 0.0;
+          a = (int.tryParse(m[3]) ?? 0) ?? 0;
+          b = (int.tryParse(m[4]) ?? 0) ?? 0;
         });
+        try {
+          SharedPreferences.getInstance().then((value) {
+            value.setInt(
+                'batteryPercentage', (int.tryParse(m[2]) ?? 0).clamp(0, 100));
+          });
+          BLEDataProvider().logBLEData(m);
+        } catch (e) {}
       } catch (_) {}
     }
   }
@@ -155,19 +169,18 @@ class _ControlScreenState extends State<ControlScreen>
 
   @override
   void dispose() {
-    if (widget.device.state == DeviceState.connected) {
-      widget.device.disConnect();
-    }
-    _deviceSignalResultStream.cancel();
-    _serviceDiscoveryStream.cancel();
-    _stateStream.cancel();
+    // if (widget.device.state == DeviceState.connected) {
+    //   widget.device.disConnect();
+    // }
+    // _deviceSignalResultStream.cancel();
+    // _serviceDiscoveryStream.cancel();
+    // _stateStream.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     BluetoothDevicesProvider bdp = context.watch<BluetoothDevicesProvider>();
-    bdp.listenToBLEData(context);
     return HomeScreen(
       hasDevice: true,
       deviceName: bdp.connectedDeviceName ?? "",

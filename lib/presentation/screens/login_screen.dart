@@ -177,15 +177,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: phonenumber.value.parseNumber().isEmpty
                               ? () {}
                               : () async {
-                                  final result = await udp.sendOtp(
-                                      phonenumber.value.phoneNumber.toString());
-                                  subState(() {
-                                    isOtpSent = result;
-                                  });
-                                  if (result) {
-                                    showSnackBar('OTP sent successfully');
+                                  if (phonenumber.value.phoneNumber
+                                          .toString()
+                                          .length ==
+                                      13) {
+                                    final result = await udp.sendOtp(phonenumber
+                                        .value.phoneNumber
+                                        .toString());
+                                    subState(() {
+                                      isOtpSent = result;
+                                    });
+                                    if (result) {
+                                      showSnackBar('OTP sent successfully');
+                                    } else {
+                                      showSnackBar('OTP sending failed');
+                                    }
                                   } else {
-                                    showSnackBar('OTP sending failed');
+                                    showSnackBar(
+                                        'Please enter a valid phone number');
                                   }
                                 },
                           child: const Text('Send OTP'),

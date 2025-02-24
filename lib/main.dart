@@ -1,5 +1,3 @@
-// ignore_for_file: unused_import
-
 import 'package:ezing/data/datasource/mongodb.dart';
 import 'package:ezing/firebase_options.dart';
 import 'package:ezing/presentation/providers/battery_swap_provider.dart';
@@ -23,7 +21,6 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   await mongoDB.init();
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (_) => BluetoothProvider()),
@@ -34,10 +31,14 @@ Future<void> main() async {
     ChangeNotifierProvider(create: (_) => UserDataProvider()),
     ChangeNotifierProvider(create: (_) => LocationProvider()),
     ChangeNotifierProvider(create: (_) => SwapStationProvider()),
-    ChangeNotifierProxyProvider3<BluetoothDevicesProvider,BluetoothProvider,BLEDataProvider,BatterySwapProvider>(
-      create: (context) => BatterySwapProvider(context.read<BluetoothDevicesProvider>(),context.read<BluetoothProvider>(),context.read<BLEDataProvider>()),
-      update: (context, _bleProvider, _bluetoothProvider, _bleDataProvider, batterySwapProvider) =>
-          batterySwapProvider!.update(_bleProvider, _bluetoothProvider, _bleDataProvider),
+    ChangeNotifierProxyProvider2<BluetoothDevicesProvider, BluetoothProvider, BatterySwapProvider>(
+      create: (context) => BatterySwapProvider(
+          context.read<BluetoothDevicesProvider>(),
+          context.read<BluetoothProvider>(),),
+      update: (context, _bleProvider, _bluetoothProvider,
+              batterySwapProvider) =>
+          batterySwapProvider!
+              .update(_bleProvider, _bluetoothProvider),
     ),
   ], child: const Ezing()));
 }
@@ -64,7 +65,11 @@ class Ezing extends StatelessWidget {
           seedColor: const Color(0xFF56BB45),
         ),
       ),
-      home: const Entry(),
+      home: SafeArea(
+        child: Scaffold(
+          body: const Entry(),
+        ),
+      ),
     );
   }
 }

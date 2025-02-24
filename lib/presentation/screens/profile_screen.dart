@@ -13,8 +13,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     UserDataProvider userDataProvider = context.watch<UserDataProvider>();
-    BatterySwapProvider batterySwapProvider =
-        context.watch<BatterySwapProvider>();
+    BatterySwapProvider batterySwapProvider = context.watch<BatterySwapProvider>();
     SwapStationProvider swapStationProvider =
         context.watch<SwapStationProvider>();
     return Scaffold(
@@ -64,14 +63,15 @@ class ProfileScreen extends StatelessWidget {
               // Navigator.of(context).push(MaterialPageRoute(
               //   builder: (context) => BatterySwapScreen(),
               // ));
-              if(await batterySwapProvider.canSwapBattery(userDataProvider.user!.phone, context)){
-                showBatterySwapBottomSheet(context);
+              if (await batterySwapProvider.canSwapBattery(
+                  userDataProvider.user!.phone, context)) {
+                // showBatterySwapBottomSheet(context);
               }
             },
             title: Text('Swap Battery'),
             subtitle: Text('Swap your battery'),
             trailing: Icon(FontAwesomeIcons.chevronRight),
-          )
+          ),
         ],
       ),
     );

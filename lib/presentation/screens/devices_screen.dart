@@ -55,14 +55,14 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   @override
   void dispose() {
-    BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
-    try {
-      bdp.connectedDevice?.disConnect();
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
+    // BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
+    // try {
+    //   bdp.connectedDevice?.disConnect();
+    // } catch (e) {
+    //   if (kDebugMode) {
+    //     print(e);
+    //   }
+    // }
     super.dispose();
   }
 

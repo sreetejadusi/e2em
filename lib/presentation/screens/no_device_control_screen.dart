@@ -53,8 +53,7 @@ class _NoDeviceControlScreenState extends State<NoDeviceControlScreen>
             _mode == 4 ||
             _mode == 5) {
         } else {}
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }
 

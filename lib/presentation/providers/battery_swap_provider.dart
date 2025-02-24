@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BatterySwapProvider with ChangeNotifier {
   final DbCollection _batteriesCollection = mongoDB.db.collection('batteries');
@@ -13,26 +14,35 @@ class BatterySwapProvider with ChangeNotifier {
       mongoDB.db.collection('swap_stations');
   final DbCollection _usersCollection = mongoDB.db.collection('users');
   final BluetoothDevicesProvider _bleProvider;
-  final BLEDataProvider _bleDataProvider;
+  // final BLEDataProvider _bleDataProvider;
   final BluetoothProvider _bluetoothProvider;
 
   BatterySwapProvider(
-      this._bleProvider, this._bluetoothProvider, this._bleDataProvider);
+    this._bleProvider,
+    this._bluetoothProvider,
+    // this._bleDataProvider,
+  );
 
-  BatterySwapProvider update(BluetoothDevicesProvider bleProvider,
-      BluetoothProvider bluetoothProvider, BLEDataProvider bleDataProvider) {
-    return BatterySwapProvider(bleProvider, bluetoothProvider, bleDataProvider);
+  BatterySwapProvider update(
+    BluetoothDevicesProvider bleProvider,
+    BluetoothProvider bluetoothProvider,
+    // BLEDataProvider bleDataProvider,
+  ) {
+    return BatterySwapProvider(
+      bleProvider,
+      bluetoothProvider,
+      // bleDataProvider,
+    );
   }
 
   Future<bool> isUserNearSwapStation(String userId) async {
     try {
-      final userDocument = await _usersCollection.findOne({'userId': userId});
+      final userDocument = await _usersCollection.findOne({'phone': userId});
       if (userDocument == null || userDocument['station'] == null) return false;
 
       final stationDocument = await _swapStationsCollection
           .findOne({'stationId': userDocument['station']});
       if (stationDocument == null) return false;
-
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       double distance = Geolocator.distanceBetween(
@@ -69,7 +79,7 @@ class BatterySwapProvider with ChangeNotifier {
       return false;
     }
 
-    if (_bleProvider.connectedDevice != null) {
+    if (_bleProvider.connectedDevice == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Vehicle is not connected via BLE"),
@@ -79,8 +89,9 @@ class BatterySwapProvider with ChangeNotifier {
       return false;
     }
 
-    int batteryPercentage = _bleDataProvider.batteryPercentage;
-    if (batteryPercentage > 25) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int battery = prefs.getInt('batteryPercentage') ?? 0;
+    if (battery > 25) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Battery percentage is above 25%"),
@@ -89,11 +100,12 @@ class BatterySwapProvider with ChangeNotifier {
       print("Battery percentage is above 25%");
       return false;
     }
+    print(_bleProvider.connectedDevice);
     return true;
   }
 
-  Future<bool> swapBattery(
-      String userId, String oldBatteryId, String newBatteryId, BuildContext context) async {
+  Future<bool> swapBattery(String userId, String oldBatteryId,
+      String newBatteryId, BuildContext context) async {
     try {
       if (!await canSwapBattery(userId, context)) return false;
 
