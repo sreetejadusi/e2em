@@ -16,7 +16,7 @@ class NoDeviceControlScreen extends StatefulWidget {
 class _NoDeviceControlScreenState extends State<NoDeviceControlScreen>
     with TickerProviderStateMixin {
   String cycleId = "0";
-  int mode = 1;
+  int mode = 0;
   @override
   void dispose() {
     super.dispose();
@@ -73,11 +73,17 @@ class _NoDeviceControlScreenState extends State<NoDeviceControlScreen>
       speed: 0,
       rangeLeft: 0,
       modeChange: (int modeNum) {
-        String mn = modeNum.toString();
-        setState(() {
-          mode = modeNum;
-        });
+        // String mn = modeNum.toString();
+        // setState(() {
+        //   mode = modeNum;
+        // });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Please Connect to a Device"),
+          ),
+        );
       },
+      isLoading: false,
     );
   }
 }

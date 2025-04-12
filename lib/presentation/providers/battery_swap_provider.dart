@@ -1,5 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:ezing/data/datasource/mongodb.dart';
-import 'package:ezing/presentation/providers/ble_data_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -53,7 +54,9 @@ class BatterySwapProvider with ChangeNotifier {
       );
       return distance <= 300;
     } catch (e) {
-      print("Error checking user proximity: $e");
+      if (kDebugMode) {
+        print("Error checking user proximity: $e");
+      }
       return false;
     }
   }
@@ -61,31 +64,31 @@ class BatterySwapProvider with ChangeNotifier {
   Future<bool> canSwapBattery(String userId, BuildContext context) async {
     if (!await isUserNearSwapStation(userId)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("User is not near the swap station"),
         ),
       );
-      print("User is not near the swap station");
+      if (kDebugMode) {
+        print("User is not near the swap station");
+      }
       return false;
     }
 
     if (!_bluetoothProvider.bluetoothOn) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("Bluetooth is not enabled"),
         ),
       );
-      print("Bluetooth is not enabled");
       return false;
     }
 
     if (_bleProvider.connectedDevice == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("Vehicle is not connected via BLE"),
         ),
       );
-      print("Vehicle is not connected via BLE");
       return false;
     }
 
@@ -93,14 +96,15 @@ class BatterySwapProvider with ChangeNotifier {
     int battery = prefs.getInt('batteryPercentage') ?? 0;
     if (battery > 25) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("Battery percentage is above 25%"),
         ),
       );
-      print("Battery percentage is above 25%");
       return false;
     }
-    print(_bleProvider.connectedDevice);
+    if (kDebugMode) {
+      print(_bleProvider.connectedDevice);
+    }
     return true;
   }
 
@@ -112,7 +116,6 @@ class BatterySwapProvider with ChangeNotifier {
       final existingBattery =
           await _batteriesCollection.findOne({'batteryId': newBatteryId});
       if (existingBattery != null && existingBattery['vehicleId'] != null) {
-        print("New battery is already assigned to another vehicle");
         return false;
       }
 
@@ -126,10 +129,8 @@ class BatterySwapProvider with ChangeNotifier {
         modify.set('vehicleId', userId),
       );
 
-      print("Battery swap successful");
       return true;
     } catch (e) {
-      print("Error swapping battery: $e");
       return false;
     }
   }

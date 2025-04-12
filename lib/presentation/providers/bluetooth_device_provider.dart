@@ -1,8 +1,9 @@
-import 'dart:typed_data';
 
-import 'package:ezing/presentation/providers/ble_data_provider.dart';
-import 'package:ezing/presentation/providers/bluetooth_provider.dart';
-import 'package:flutter/foundation.dart';
+// ignore_for_file: empty_catches
+
+import 'package:ezing/presentation/providers/location_provider.dart';
+import 'package:ezing/presentation/providers/saved_devices_provider.dart';
+import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_elves/flutter_blue_elves.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,12 +59,12 @@ class BluetoothDevicesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> changeLastDevice(String name) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('lastDevice', name);
-    lastDeviceInit();
-    notifyListeners();
-  }
+  // Future<void> changeLastDevice(String name) async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setString('lastDevice', name);
+  //   lastDeviceInit();
+  //   notifyListeners();
+  // }
 
   Future<void> changeConnectedDevice(Device? d, String name) async {
     _connectedDevice = d;
@@ -78,64 +79,171 @@ class BluetoothDevicesProvider with ChangeNotifier {
 
   Future<void> lastDeviceInit() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _lastDevice = (prefs.getString('lastDevice') ?? "--------");
+    _lastDevice = (prefs.getString('vehicle') ?? "--------");
     notifyListeners();
   }
+
+  // Future<void> connectToLastDevice(BuildContext context) async {
+  //   await scan(context);
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //     content: Text("Connecting to last device"),
+  //     duration: const Duration(seconds: 2),
+  //   ));
+  //   await lastDeviceInit();
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //     content: Text("Last Device Init"),
+  //     duration: const Duration(seconds: 2),
+  //   ));
+  //   if (_lastDevice != "--------") {
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //       content: Text("Last Device Exists: $_lastDevice"),
+  //       duration: const Duration(seconds: 2),
+  //     ));
+  //     final scanResult = checksr(_lastDevice);
+  //     final device = scanResult!.connect(connectTimeout: 10000);
+  //     changeConnectedDevice(device, _lastDevice);
+  //     notifyListeners();
+
+  //     // _scanResultList.forEach((element) {
+  //     //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //     //     content: Text("Checking ${element.name}"),
+  //     //     duration: const Duration(seconds: 2),
+  //     //   ));
+  //     //   if (element.name == _lastDevice) {
+  //     //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //     //       content: Text("Found ${element.name}"),
+  //     //       duration: const Duration(seconds: 2),
+  //     //     ));
+  //     //     Device? device = element.connect(connectTimeout: 10000);
+  //     //     changeConnectedDevice(device, element.name!);
+  //     //     changeLastDevice(element.name!);
+  //     //     notifyListeners();
+  //     //   }
+  //     // });
+  //   }
+  // }
 
   Future<void> stopScan() async {
     try {
       FlutterBlueElves.instance.stopScan();
       notifyListeners();
     } catch (e) {
-      print(e);
     }
   }
 
+  // Future<void> scan(BuildContext context) async {
+  //   BluetoothProvider bp = context.read<BluetoothProvider>();
+  //   SavedDevicesProvider sdp = context.read<SavedDevicesProvider>();
+  //   DataProvider dp = context.read<DataProvider>();
+  //   _openedControl = false;
+  //   notifyListeners();
+  //   try {
+  //     if (_scanning) {
+  //       FlutterBlueElves.instance.stopScan();
+  //     } else {
+  //       if (bp.bluetoothOn && bp.gpsOn) {
+  //         _scanning = true;
+  //         notifyListeners();
+  //         _hideConnectedList = [];
+  //         notifyListeners();
+  //         getHideConnectedDevice();
+  //         notifyListeners();
+  //         _scanResultList = [];
+  //         notifyListeners();
+  //         FlutterBlueElves.instance.startScan(10000).listen((event) async {
+  //           _scanResultList.insert(0, event);
+  //           notifyListeners();
+  //           // if (dp.autoConnect) {
+  //           // lastDeviceInit();
+  //           // await sdp.init();
+  //           // print(sdp.devices.length);
+  //           // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //           //   content: Text("SDP: ${sdp.devices.length}"),
+  //           //   duration: const Duration(seconds: 2),
+  //           // ));
+  //           //   connectToLastDevice(context);
+  //           // }
+  //           // if (dp.autoConnect) {
+  //           //   lastDeviceInit();
+  //           //   String ss = event.name ?? "-----";
+  //           //   String s = ss.trim();
+  //           //   if (!_openedControl && s == _lastDevice.trim() && s != "-----") {
+  //           //     stopScan();
+  //           //     changeTabIndex(1);
+  //           //     Device toConnectDevice = event.connect(connectTimeout: 10000);
+  //           //     changeConnectedDevice(toConnectDevice, event.name ?? "-----");
+  //           //     changeLastDevice(s);
+
+  //           //     notifyListeners();
+  //           //   }
+  //           // }
+  //           // notifyListeners();
+  //         }).onDone(() {
+  //           _scanning = false;
+  //           notifyListeners();
+  //         });
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  //   notifyListeners();
+  // }
+
   Future<void> scan(BuildContext context) async {
-    BluetoothProvider bp = context.read<BluetoothProvider>();
-    DataProvider dp = context.read<DataProvider>();
+    context.read<SavedDevicesProvider>();
+    context.read<DataProvider>();
+    LocationProvider lp = context.read<LocationProvider>();
+    UserDataProvider udp = context.read<UserDataProvider>();
     _openedControl = false;
     notifyListeners();
     try {
       if (_scanning) {
-        FlutterBlueElves.instance.stopScan();
+        // FlutterBlueElves.instance.stopScan();
       } else {
-        if (bp.bluetoothOn && bp.gpsOn) {
-          _scanning = true;
-          notifyListeners();
-          _hideConnectedList = [];
-          notifyListeners();
-          getHideConnectedDevice();
-          notifyListeners();
-          _scanResultList = [];
-          notifyListeners();
-          FlutterBlueElves.instance.startScan(10000).listen((event) {
-            _scanResultList.insert(0, event);
-            notifyListeners();
-            if (dp.autoConnect) {
-              lastDeviceInit();
-              String ss = event.name ?? "-----";
-              String s = ss.trim();
-
-              if (!_openedControl && s == _lastDevice.trim() && s != "-----") {
-                stopScan();
-                changeTabIndex(1);
-                Device toConnectDevice = event.connect(connectTimeout: 10000);
-                changeConnectedDevice(toConnectDevice, event.name ?? "-----");
-                changeLastDevice(s);
-
-                notifyListeners();
-              }
+        _scanning = true;
+        notifyListeners();
+        _hideConnectedList = [];
+        notifyListeners();
+        getHideConnectedDevice();
+        notifyListeners();
+        _scanResultList = [];
+        notifyListeners();
+        FlutterBlueElves.instance.startScan(10000).listen((event) async {
+          _scanResultList.insert(0, event);
+          if (true) {
+            String ss = event.name ?? "-----";
+            String s = ss.trim();
+            if (s == udp.user?.vehicle.trim() && s != "-----") {
+              stopScan();
+              Device toConnectDevice = event.connect(connectTimeout: 10000);
+              lp.pushLocation(udp.user!.phone);
+              changeConnectedDevice(toConnectDevice, _lastDevice);
+              // changeLastDevice(s);
+              changeTabIndex(1);
             }
-            notifyListeners();
-          }).onDone(() {
-            _scanning = false;
-            notifyListeners();
-          });
-        }
+          }
+
+          // if (true) {
+          //   await sdp.init();
+          //   for (int i = 0; i < sdp.devices.length; i++) {
+          //     if (sdp.devices[i].name == event.name) {
+          //       stopScan();
+          //       Device toConnectDevice = event.connect(connectTimeout: 10000);
+          //       lp.pushLocation(udp.user!.phone);
+          //       changeConnectedDevice(toConnectDevice, event.name ?? "-----");
+          //       // changeLastDevice(event.name ?? "-----");
+          //       changeTabIndex(1);
+          //     }
+          //   }
+          // }
+          notifyListeners();
+        }).onDone(() {
+          _scanning = false;
+          notifyListeners();
+        });
       }
     } catch (e) {
-      print(e);
     }
     notifyListeners();
   }
@@ -146,37 +254,4 @@ class BluetoothDevicesProvider with ChangeNotifier {
       notifyListeners();
     });
   }
-
-  // void listenToBLEData(BuildContext context) {
-  //   if (_connectedDevice == null) {
-  //     debugPrint("No device connected.");
-  //     return;
-  //   }
-
-  //   try {
-  //     _connectedDevice!.deviceSignalResultStream.listen((deviceSignalResult) {
-  //       if (deviceSignalResult.data!.isNotEmpty) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text(
-  //               "Received Data: ${deviceSignalResult.data}",
-  //             ),
-  //           ),
-  //         );
-  //         context.read<BLEDataProvider>().logBLEData(
-  //               deviceSignalResult.data ??
-  //                   Uint8List.fromList([0, 0, 0, 0, 0]),
-  //             );
-  //       } else {
-  //         context.read<BLEDataProvider>().logBLEData(deviceSignalResult.data ??
-  //             Uint8List.fromList([0, 0, 0, 0, 0]));
-  //         debugPrint("Received empty data from BLE.");
-  //       }
-  //     }).onError((e) {
-  //       debugPrint("Error fetching services: $e");
-  //     });
-  //   } catch (e) {
-  //     debugPrint("Error in listenToBLEData: $e");
-  //   }
-  // }
 }

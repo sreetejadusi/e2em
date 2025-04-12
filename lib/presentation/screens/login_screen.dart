@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print, no_wildcard_variable_uses, prefer_const_constructors, unused_import
 
+import 'package:ezing/data/functions/constants.dart';
 import 'package:ezing/main.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/widgets/logo.dart';
@@ -17,13 +18,17 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+TextEditingController nameController = TextEditingController();
+TextEditingController emailController = TextEditingController();
+TextEditingController phoneController = TextEditingController();
+ValueNotifier<String> phonenumber = ValueNotifier('');
+
+bool isOtpSent = false;
+bool isNewUser = false;
+String otpValue = '';
+
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  ValueNotifier<PhoneNumber> phonenumber =
-      ValueNotifier(PhoneNumber(phoneNumber: '', dialCode: '', isoCode: ''));
-  bool isOtpSent = false;
-  bool isNewUser = false;
+  bool isLoading = false; // Add this variable to track loading state
 
   void showSnackBar(String data) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -35,6 +40,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void initState() {
+    nameController.clear();
+    emailController.clear();
+    phoneController.clear();
+    isOtpSent = false;
+    isNewUser = false;
+    otpValue = '';
+    isLoading = false;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
@@ -42,53 +59,77 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        toolbarHeight: height * 0.1,
+        // shape: Border.fromBorderSide(BorderSide(color: themeColor)),
         automaticallyImplyLeading: false,
-        title: Image.asset(
-          'assets/appbar_logo.png',
-          width: width * 0.3,
+        title: Visibility(
+          visible: isOtpSent || isNewUser,
+          child: Container(
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.black, width: 1),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black, offset: Offset(0, 2))
+                ]),
+            child: IconButton(
+              onPressed: () {
+                if (isNewUser) {
+                  setState(() {
+                    isOtpSent = true;
+                    isNewUser = false;
+                  });
+                } else if (isOtpSent) {
+                  setState(() {
+                    isNewUser = false;
+                    isOtpSent = false;
+                  });
+                }
+              },
+              icon: Icon(Icons.chevron_left),
+            ),
+          ),
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48),
         child: Center(
           child: StatefulBuilder(builder: (context, subState) {
             return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: height * 0.01,
+                Image.asset(
+                  'assets/appbar_logo.png',
+                  width: width * 0.3,
                 ),
-                Text(
-                  isNewUser ? 'ONBOARDING' : 'LOGIN',
-                  style: TextStyle(
-                    letterSpacing: 0,
-                    fontSize:
-                        Theme.of(context).textTheme.displayLarge!.fontSize,
-                  ),
+                SizedBox(
+                  height: height * 0.04,
                 ),
                 Text(
                   isNewUser
-                      ? 'WELCOME!'
-                      : 'enter your phone number to get started',
+                      ? 'Just a few more details'
+                      : isOtpSent
+                          ? "Enter 6 digit OTP"
+                          : 'Enter your\nphone number',
                   style: TextStyle(
-                    letterSpacing: 0,
-                    fontSize: Theme.of(context).textTheme.bodySmall!.fontSize,
-                  ),
-                ),
-                SizedBox(
-                  height: height * 0.02,
+                      letterSpacing: 0,
+                      fontSize:
+                          Theme.of(context).textTheme.displaySmall?.fontSize,
+                      fontWeight: FontWeight.bold),
                 ),
                 Visibility(
                   visible: isOtpSent && !isNewUser,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        phonenumber.value.phoneNumber.toString(),
+                        phonenumber.value.isNotEmpty
+                            ? 'sent to ${phonenumber.value}'
+                            : '',
                         style:
                             Theme.of(context).textTheme.bodyMedium!.copyWith(),
                       ),
@@ -104,27 +145,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 !isOtpSent
                     ? Container(
                         decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 1),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(500))),
+                          border: Border.all(color: Colors.black, width: 1),
+                        ),
                         child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: InternationalPhoneNumberInput(
-                              inputBorder: InputBorder.none,
-                              hintText: 'Mobile number',
-                              selectorConfig: const SelectorConfig(
-                                selectorType:
-                                    PhoneInputSelectorType.BOTTOM_SHEET,
-                                showFlags: false,
-                              ),
-                              onInputChanged: (_) {
-                                phonenumber.value = _;
-                              },
-                              autoValidateMode: AutovalidateMode.disabled,
-                              initialValue: PhoneNumber(isoCode: 'IN'),
-                            )),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: TextField(
+                            keyboardType: TextInputType.phone,
+                            controller: phoneController,
+                            onChanged: (value) {
+                              phonenumber.value = value;
+                            },
+                            decoration: const InputDecoration(
+                              hintText: '10 digit phone number',
+                              hintStyle: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
                       )
                     : isOtpSent && !isNewUser
                         ? PinCodeTextField(
@@ -132,58 +170,65 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.number,
                             appContext: context,
                             length: 6,
-                            pinTheme: PinTheme(),
+                            pinTheme: PinTheme(
+                              shape: PinCodeFieldShape.box,
+                              borderRadius: BorderRadius.circular(10),
+                              fieldHeight: width * 0.1,
+                              activeColor: Colors.black,
+                              inactiveColor: Colors.black,
+                              selectedColor: Colors.black,
+                            ),
                             onCompleted: (_) async {
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
-                              final result = await udp.verifyOtp(
-                                  prefs.getString('verificationId') ?? '',
-                                  _.toString());
-                              if (result) {
-                                showSnackBar('OTP verified successfully');
-                                print(
-                                    '--------------------------------------------');
-                                final phoneExists = await udp.doesPhoneExists(
-                                    phonenumber.value.parseNumber());
-                                print("phoneavailable$phoneExists");
-                                if (!phoneExists) {
-                                  subState(() {
-                                    isNewUser = true;
-                                  });
-                                } else {
-                                  await udp.loginUser(
-                                      phonenumber.value.parseNumber());
-                                  Navigator.of(context)
-                                      .pushReplacement(MaterialPageRoute(
-                                    builder: (context) => Entry(),
-                                  ));
-                                }
-                              } else {
-                                showSnackBar('OTP verification failed');
-                              }
+                              otpValue = _;
                             },
                           )
                         : Container(),
                 SizedBox(
-                  height: height * 0.01,
+                  height: height * 0.03,
                 ),
-                Visibility(
-                  visible: !isOtpSent,
-                  child: ValueListenableBuilder(
-                    builder: (context, _, widget) {
-                      return SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: phonenumber.value.parseNumber().isEmpty
-                              ? () {}
-                              : () async {
-                                  if (phonenumber.value.phoneNumber
-                                          .toString()
-                                          .length ==
-                                      13) {
-                                    final result = await udp.sendOtp(phonenumber
-                                        .value.phoneNumber
-                                        .toString());
+                ValueListenableBuilder(
+                  builder: (context, _, widget) {
+                    return Visibility(
+                      visible: !isNewUser,
+                      child: InkWell(
+                        onTap: phonenumber.value.isEmpty || isLoading
+                            ? () {}
+                            : () async {
+                                setState(() {
+                                  isLoading = true; // Set loading state to true
+                                });
+                                if (isOtpSent) {
+                                  print(otpValue);
+                                  SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
+                                  final result = await udp.verifyOtp(
+                                      prefs.getString('verificationId') ?? '',
+                                      otpValue.toString());
+                                  if (result) {
+                                    showSnackBar('OTP verified successfully');
+                                    print(
+                                        '--------------------------------------------');
+                                    final phoneExists = await udp
+                                        .doesPhoneExists(phonenumber.value);
+                                    print("phoneavailable$phoneExists");
+                                    if (!phoneExists) {
+                                      subState(() {
+                                        isNewUser = true;
+                                      });
+                                    } else {
+                                      await udp.loginUser(phonenumber.value);
+                                      Navigator.of(context)
+                                          .pushReplacement(MaterialPageRoute(
+                                        builder: (context) => Entry(),
+                                      ));
+                                    }
+                                  } else {
+                                    showSnackBar('OTP verification failed');
+                                  }
+                                } else {
+                                  if (phonenumber.value.length == 10) {
+                                    final result = await udp
+                                        .sendOtp('+91${phonenumber.value}');
                                     subState(() {
                                       isOtpSent = result;
                                     });
@@ -196,13 +241,36 @@ class _LoginScreenState extends State<LoginScreen> {
                                     showSnackBar(
                                         'Please enter a valid phone number');
                                   }
-                                },
-                          child: const Text('Send OTP'),
+                                }
+                                setState(() {
+                                  isLoading =
+                                      false; // Set loading state to false
+                                });
+                              },
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: themeColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: width * 0.1,
+                            vertical: height * 0.01,
+                          ),
+                          child: Text(
+                            isLoading
+                                ? 'Loading...'
+                                : 'Continue', // Change text based on loading state
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      );
-                    },
-                    valueListenable: phonenumber,
-                  ),
+                      ),
+                    );
+                  },
+                  valueListenable: phonenumber,
                 ),
                 Visibility(
                   visible: isNewUser,
@@ -251,26 +319,37 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(
-                        height: height * 0.02,
+                        height: height * 0.05,
                       ),
                       ValueListenableBuilder(
                         builder: (context, _, widget) {
                           return SizedBox(
                             width: double.infinity,
                             child: FilledButton(
-                              onPressed: nameController.text.isEmpty
+                              onPressed: nameController.text.isEmpty ||
+                                      isLoading
                                   ? () {}
                                   : () async {
+                                      setState(() {
+                                        isLoading =
+                                            true; // Set loading state to true
+                                      });
                                       await udp.registerUser(
                                           nameController.text,
                                           emailController.text,
-                                          phonenumber.value.parseNumber());
+                                          phonenumber.value);
                                       Navigator.of(context)
                                           .pushReplacement(MaterialPageRoute(
                                         builder: (context) => Entry(),
                                       ));
+                                      setState(() {
+                                        isLoading =
+                                            false; // Set loading state to false
+                                      });
                                     },
-                              child: const Text('Register'),
+                              child: Text(isLoading
+                                  ? 'Loading...'
+                                  : 'Register'), // Change text based on loading state
                             ),
                           );
                         },

@@ -1,6 +1,5 @@
 // ignore_for_file: deprecated_member_use, use_super_parameters, non_constant_identifier_names, use_build_context_synchronously, unused_local_variable
 
-import 'dart:async';
 
 import 'package:ezing/data/datasource/mongodb.dart';
 import 'package:ezing/data/functions/internet_connectiviy.dart';
@@ -12,7 +11,6 @@ import 'package:ezing/presentation/providers/saved_devices_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/widgets/components.dart';
 import 'package:ezing/presentation/widgets/logo.dart';
-import 'package:flutter/foundation.dart';
 import 'package:mongo_dart/mongo_dart.dart' hide State, Center;
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -38,18 +36,21 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   ///
   load() async {
-    BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
+    BluetoothDevicesProvider bdp = context.watch<BluetoothDevicesProvider>();
     BluetoothProvider bp = context.read<BluetoothProvider>();
-    Future.delayed(const Duration(milliseconds: 1000), () async {
-      if (bp.gpsOn && bp.bluetoothOn && !bdp.scanning) {
+    if (bp.gpsOn && bp.bluetoothOn && !bdp.scanning) {
+      if (bdp.connectedDevice == null) {
         bdp.scan(context);
       }
-    });
+    }
   }
 
   @override
   void initState() {
-    load();
+    BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
+    if (bdp.connectedDevice == null) {
+      load();
+    }
     super.initState();
   }
 
@@ -70,7 +71,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   Widget build(BuildContext context) {
     BluetoothProvider bp = context.watch<BluetoothProvider>();
     BluetoothDevicesProvider bdp = context.watch<BluetoothDevicesProvider>();
-    SavedDevicesProvider sdp = context.watch<SavedDevicesProvider>();
+    SavedDevicesProvider sdp = context.read<SavedDevicesProvider>();
     return WillPopScope(
       onWillPop: () async {
         return true;
@@ -370,8 +371,11 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         InkWell(
                           onTap: () {
                             ScanResult sri = bdp.checksr(d.id)!;
+                            LocationProvider lp =
+                                context.read<LocationProvider>();
                             Device toConnectDevice =
                                 sri.connect(connectTimeout: 10000);
+                            lp.pushLocation(udp.user!.phone);
                             bdp
                                 .changeConnectedDevice(
                                     toConnectDevice, sri.name ?? "--------")
@@ -380,7 +384,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                             });
                             String ss = sri.name ?? "-----";
                             String s = ss.trim();
-                            bdp.changeLastDevice(s);
+                            // bdp.changeLastDevice(s);
                             bdp.changeTabIndex(1);
                           },
                           child: Container(
@@ -463,12 +467,12 @@ class _DevicesScreenState extends State<DevicesScreen> {
             ActionChip(
           onPressed: () async {
             Device toConnectDevice = hcd.connect(connectTimeout: 10000);
-            bdp.changeConnectedDevice(toConnectDevice, hcd.name ?? "--------");
             lp.pushLocation(udp.user!.phone);
+            bdp.changeConnectedDevice(toConnectDevice, hcd.name ?? "--------");
 
             String ss = hcd.name ?? "-----";
             String s = ss.trim();
-            bdp.changeLastDevice(s);
+            // bdp.changeLastDevice(s);
             bdp.changeTabIndex(1);
           },
           label: const Text("Connect"),
@@ -504,7 +508,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
             String ss = sr.name ?? "-----";
             String s = ss.trim();
-            bdp.changeLastDevice(s);
+            // bdp.changeLastDevice(s);
             bdp.changeTabIndex(1);
           },
           label: const Text("Connect"),
