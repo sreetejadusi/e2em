@@ -1,15 +1,18 @@
-// ignore_for_file: unused_local_variable, use_super_parameters, unnecessary_const, prefer_const_literals_to_create_immutables
+// ignore_for_file: unused_local_variable, use_super_parameters, unnecessary_const, prefer_const_literals_to_create_immutables, use_build_context_synchronously
+
+import 'dart:async';
 
 import 'package:ezing/data/datasource/mongodb.dart';
+import 'package:ezing/data/functions/constants.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
 import 'package:ezing/presentation/providers/data_provider.dart';
 import 'package:ezing/presentation/providers/saved_devices_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/screens/control_screen.dart';
-import 'package:ezing/presentation/screens/devices_screen.dart';
 import 'package:ezing/presentation/screens/no_device_control_screen.dart';
 import 'package:ezing/presentation/screens/profile_screen.dart';
+import 'package:ezing/presentation/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -29,26 +32,40 @@ class _StartState extends State<Start> {
       isLoading = true;
     });
     BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
-    bdp.resetName();
+    // bdp.resetName();
     BluetoothProvider bp = context.read<BluetoothProvider>();
     DataProvider dp = context.read<DataProvider>();
     SavedDevicesProvider sdp = context.read<SavedDevicesProvider>();
     UserDataProvider udp = context.read<UserDataProvider>();
     sdp.init();
     dp.autoConnectInit();
+
     await MongoDBConnection.mongoDB.init();
+    await udp.syncUserData();
     udp.getUserData();
+
     await bdp.lastDeviceInit();
     Future.delayed(const Duration(seconds: 0), () async {
       await bp.check(context);
     });
-
     Future.delayed(const Duration(milliseconds: 1500), () async {
-      if (bp.gpsOn && bp.bluetoothOn) {
+      // bdp.connectedDevice!.disConnect();
+      if (bp.gpsOn && bp.bluetoothOn && bdp.connectedDevice == null) {
+        // bdp.scan(context);
+        // bdp.connectToLastDevice(context);
+      }
+      // if(dp.autoConnect){
+      // }
+    });
+
+    bdp.changeTabIndex(1);
+
+    Timer.periodic(const Duration(milliseconds: 1000), (timer) async {
+      if (bdp.connectedDevice == null) {
         bdp.scan(context);
       }
     });
-    bdp.changeTabIndex(1);
+
     setState(() {
       isLoading = false;
     });
@@ -56,8 +73,8 @@ class _StartState extends State<Start> {
 
   @override
   void initState() {
-    SystemChannels.textInput.invokeMethod('TextInput.hide');
     load();
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
     super.initState();
   }
 
@@ -71,26 +88,25 @@ class _StartState extends State<Start> {
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
-
     BluetoothProvider bp = context.watch<BluetoothProvider>();
     BluetoothDevicesProvider bdp = context.watch<BluetoothDevicesProvider>();
     List<Widget> tabs = [
-      const DevicesScreen(),
+      const ProfileScreen(),
       if (bdp.connectedDevice != null) ...[
         ControlScreen(
           device: bdp.connectedDevice!,
           rebuild: (String key) {
             setState(() {
-              //csKey = key;
+              csKey = key;
             });
           },
-          //key: Key(csKey),
+          key: Key(csKey),
         ),
         // StreamScreen()
       ] else ...[
-        NoDeviceControlScreen()
+        const NoDeviceControlScreen()
       ],
-      const ProfileScreen(),
+      const SettingScreen(),
     ];
     return SafeArea(
       child: Scaffold(
@@ -101,53 +117,51 @@ class _StartState extends State<Start> {
                   Expanded(child: tabs[bdp.tabIndex]),
                 ],
               ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Card(
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
+        bottomNavigationBar: Container(
+          color: const Color(0xFFFCFDF7),
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+          child: Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
+                bottomLeft: const Radius.circular(20),
+                bottomRight: const Radius.circular(20),
               ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: const Radius.circular(20),
-                  bottomRight: const Radius.circular(20),
-                ),
-                child: Container(
-                  color: Colors.black54,
-                  // color: Color(0xFF2a2a2a),
-                  child: SizedBox(
-                    //height: 70,
-                    child: BottomNavigationBar(
-                      currentIndex: bdp.tabIndex,
-                      showUnselectedLabels: false,
-                      onTap: onTabTapped,
-                      elevation: 0,
-                      selectedItemColor: const Color(0xFF56bb45),
-                      unselectedItemColor: Colors.white,
-                      showSelectedLabels: false,
-                      iconSize: 30,
-                      //selectedItemColor: firstAccentColor,
-                      backgroundColor: Colors.black54,
-                      items: [
-                        const BottomNavigationBarItem(
-                          icon: Icon(Icons.dashboard),
-                          label: "Devices",
-                        ),
-                        const BottomNavigationBarItem(
-                          icon: Icon(Icons.home),
-                          label: "Home",
-                        ),
-                        const BottomNavigationBarItem(
-                          icon: Icon(Icons.settings),
-                          label: "Settings",
-                        ),
-                      ],
-                    ),
+              child: Container(
+                color: Colors.black,
+                // color: Color(0xFF2a2a2a),
+                child: SizedBox(
+                  //height: 70,
+                  child: BottomNavigationBar(
+                    currentIndex: bdp.tabIndex,
+                    showUnselectedLabels: false,
+                    onTap: onTabTapped,
+                    elevation: 0,
+                    selectedItemColor: themeColor,
+                    unselectedItemColor: const Color(0xFFFCFDF7),
+                    showSelectedLabels: false,
+                    iconSize: 30,
+                    //selectedItemColor: firstAccentColor,
+                    backgroundColor: Colors.black54,
+                    items: [
+                      const BottomNavigationBarItem(
+                        icon: Icon(Icons.dashboard),
+                        label: "Devices",
+                      ),
+                      const BottomNavigationBarItem(
+                        icon: Icon(Icons.home),
+                        label: "Home",
+                      ),
+                      const BottomNavigationBarItem(
+                        icon: Icon(Icons.settings),
+                        label: "Settings",
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -160,9 +174,9 @@ class _StartState extends State<Start> {
 
   void onTabTapped(int index) {
     BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
-    if (index == 0) {
-      bdp.changeConnectedDevice(null, "--------");
-    } else {}
+    // if (index == 0) {
+    //   bdp.changeConnectedDevice(null, "--------");
+    // } else {}
     setState(() {});
     bdp.changeTabIndex(index);
   }

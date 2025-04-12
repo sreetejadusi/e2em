@@ -12,12 +12,15 @@ class UserModel {
   final String email;
   final String phone;
   final bool flag;
+  final String vehicle;
 
-  UserModel(
-      {required this.name,
-      required this.email,
-      required this.phone,
-      required this.flag});
+  UserModel({
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.flag,
+    required this.vehicle,
+  });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
@@ -25,6 +28,7 @@ class UserModel {
       email: map['email'] ?? '',
       phone: map['phone'] ?? '',
       flag: map['flag'] ?? false,
+      vehicle: map['vehicle'] ?? '',
     );
   }
 }
@@ -41,18 +45,35 @@ class UserDataProvider with ChangeNotifier {
       email: prefs.getString('email') ?? '',
       phone: prefs.getString('phone') ?? '',
       flag: prefs.getBool('flag') ?? false,
+      vehicle: prefs.getString('vehicle') ?? '',
     );
     notifyListeners();
   }
 
-  bool checkLogin() => _user?.phone.isNotEmpty ?? false;
+  Future<void> syncUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final result = await mongoDB.db
+        .collection('users')
+        .findOne(where.eq('phone', _user!.phone));
+    if (result != null) {
+      _user = UserModel.fromMap(result);
+      await prefs.setString('name', _user!.name);
+      await prefs.setString('email', _user!.email);
+      await prefs.setString('phone', _user!.phone);
+      await prefs.setBool('flag', _user!.flag);
+      await prefs.setString('vehicle', _user!.vehicle);
+      notifyListeners();
+    }
+  }
+
+  bool checkLogin() {
+    return _user?.phone.isNotEmpty ?? false;
+  }
 
   Future<bool> loginUser(String phone) async {
-    MongoDBConnection connection = MongoDBConnection();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final result = await connection.db
-        .collection('users')
-        .findOne(where.eq('phone', phone));
+    final result =
+        await mongoDB.db.collection('users').findOne(where.eq('phone', phone));
     if (result != null) {
       _user = UserModel.fromMap(result);
       await prefs.setString('name', _user!.name);
@@ -80,8 +101,7 @@ class UserDataProvider with ChangeNotifier {
 
   Future<bool> checkFlag() async {
     if (_user == null) return true;
-    MongoDBConnection connection = MongoDBConnection();
-    final result = await connection.db
+    final result = await mongoDB.db
         .collection('users')
         .findOne(where.eq('phone', _user!.phone));
     return result?['flag'] ?? true;
@@ -144,20 +164,22 @@ class UserDataProvider with ChangeNotifier {
   }
 
   Future<bool> registerUser(String name, String email, String phone) async {
-    MongoDBConnection connection = MongoDBConnection();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final result = await connection.db.collection('users').insertOne({
+    final result = await mongoDB.db.collection('users').insertOne({
       'name': name,
       'email': email,
       'phone': phone,
       'flag': false,
+      'vehicle': '',
     });
     if (result.isSuccess) {
-      _user = UserModel(name: name, email: email, phone: phone, flag: false);
+      _user = UserModel(
+          name: name, email: email, phone: phone, flag: false, vehicle: '');
       await prefs.setString('name', name);
       await prefs.setString('email', email);
       await prefs.setString('phone', phone);
       await prefs.setBool('flag', false);
+      await prefs.setString('vehicle', '');
       notifyListeners();
       return true;
     }
@@ -165,10 +187,8 @@ class UserDataProvider with ChangeNotifier {
   }
 
   Future<bool> doesPhoneExists(String phone) async {
-    MongoDBConnection connection = MongoDBConnection();
-    final result = await connection.db
-        .collection('users')
-        .findOne(where.eq('phone', phone));
+    final result =
+        await mongoDB.db.collection('users').findOne(where.eq('phone', phone));
     return result != null;
   }
 }
