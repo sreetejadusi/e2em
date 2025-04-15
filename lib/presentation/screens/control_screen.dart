@@ -258,15 +258,14 @@ class _ControlScreenState extends State<ControlScreen>
               : String.fromCharCodes(event.data as Uint8List);
 
           // Check for confirmation response "T,0" or "T,1"
-          if (response.startsWith('T,')) {
-            int receivedMode = int.tryParse(response.substring(2)) ?? -1;
-            if (receivedMode == modeNum) {
-              completer.complete(true);
-              showStatusSnackBar("Mode change confirmed");
-            } else {
-              completer.complete(false);
-              showStatusSnackBar("Mode mismatch", isError: true);
-            }
+
+          int receivedMode = int.tryParse(response.substring(2)) ?? -1;
+          if (receivedMode == modeNum) {
+            completer.complete(true);
+            showStatusSnackBar("Mode change confirmed");
+          } else {
+            completer.complete(false);
+            showStatusSnackBar("Mode mismatch", isError: true);
           }
         }
       }, onError: (e) {

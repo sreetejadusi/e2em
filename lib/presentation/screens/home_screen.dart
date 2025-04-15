@@ -210,10 +210,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 activeColor: Colors.white,
                                 inactiveTrackColor: Colors.white,
                                 thumbColor:
-                                    const WidgetStatePropertyAll(Colors.black),
+                                    const MaterialStatePropertyAll(Colors.black),
                                 trackOutlineColor:
-                                    const WidgetStatePropertyAll(Colors.black),
-                                thumbIcon: WidgetStatePropertyAll(Icon(
+                                    const MaterialStatePropertyAll(Colors.black),
+                                thumbIcon: MaterialStatePropertyAll(Icon(
                                   Icons.power_settings_new,
                                   color: widget.mode == 1
                                       ? themeColor
