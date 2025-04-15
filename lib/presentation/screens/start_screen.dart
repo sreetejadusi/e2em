@@ -15,6 +15,7 @@ import 'package:ezing/presentation/screens/profile_screen.dart';
 import 'package:ezing/presentation/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_blue_elves/flutter_blue_elves.dart';
 import 'package:provider/provider.dart';
 
 class Start extends StatefulWidget {
@@ -59,10 +60,15 @@ class _StartState extends State<Start> {
     });
 
     bdp.changeTabIndex(1);
-
     Timer.periodic(const Duration(milliseconds: 1000), (timer) async {
       if (bdp.connectedDevice == null) {
         bdp.scan(context);
+      }
+
+      if (bdp.connectedDevice != null &&
+          bdp.connectedDevice!.state == DeviceState.disconnected &&
+          bdp.connectedDevice!.state != DeviceState.connecting) {
+        bdp.connectedDevice!.connect();
       }
     });
 
