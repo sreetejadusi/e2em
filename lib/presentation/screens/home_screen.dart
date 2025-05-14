@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
+
 import 'package:ezing/data/functions/constants.dart';
 import 'package:ezing/presentation/providers/bluetooth_device_provider.dart';
 import 'package:ezing/presentation/providers/bluetooth_provider.dart';
@@ -7,14 +9,14 @@ import 'package:ezing/presentation/providers/location_provider.dart';
 import 'package:ezing/presentation/providers/user_data_provider.dart';
 import 'package:ezing/presentation/widgets/logo.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_elves/flutter_blue_elves.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   final int battery, speed, mode;
   final double rangeLeft;
   final String deviceName;
-  final bool hasDevice, connecting, connected;
+  final bool hasDevice, connected;
   final Function(int) modeChange;
   final Function() connect;
   final Function() disconnect;
@@ -23,7 +25,6 @@ class HomeScreen extends StatefulWidget {
     super.key,
     required this.connect,
     required this.disconnect,
-    required this.connecting,
     required this.connected,
     required this.deviceName,
     required this.hasDevice,
@@ -41,6 +42,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double sidePadding = 24;
   Color scb = const Color(0xFF232323);
+  @override
+  void initState() {
+    super.initState();
+    BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
+    if (bdp.connectedDevice != null) {
+      bdp.connectedDevice?.connectionState.listen((event) {
+        if (event == BluetoothConnectionState.disconnected) {
+          bdp.connectedDevice!.connect();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,44 +76,20 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               padding: const EdgeInsets.only(top: 48, left: 24, right: 24),
-              decoration: const BoxDecoration(color: Colors.white),
+              decoration: const BoxDecoration(color: Color(0xFFFCFDF7)),
               child: Row(
                 children: [
                   Logo(
                     width: MediaQuery.of(context).size.width * 0.25,
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      if (!bp.bluetoothOn) {
-                        FlutterBlueElves.instance
-                            .androidOpenBluetoothService((isOk) {
-                          debugPrint(isOk
-                              ? "The user agrees to turn on the Bluetooth function"
-                              : "The user does not agrees to turn on the Bluetooth function");
-                        });
-                      }
-                    },
-                    icon: Icon(
-                      Icons.bluetooth,
-                      color: bp.bluetoothOn ? Colors.green : Colors.red,
-                    ),
+                  Icon(
+                    Icons.bluetooth,
+                    color: bp.bluetoothOn ? Colors.green : Colors.red,
                   ),
-                  IconButton(
-                    onPressed: () {
-                      if (!bp.gpsOn) {
-                        FlutterBlueElves.instance
-                            .androidOpenLocationService((isOk) {
-                          debugPrint(isOk
-                              ? "The user agrees to turn on the positioning function"
-                              : "The user does not agree to enable the positioning function");
-                        });
-                      }
-                    },
-                    icon: Icon(
-                      Icons.location_on,
-                      color: bp.gpsOn ? Colors.green : Colors.red,
-                    ),
+                  Icon(
+                    Icons.location_on,
+                    color: bp.gpsPermission ? Colors.green : Colors.red,
                   ),
                 ],
               ),
@@ -209,10 +198,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 value: widget.mode == 1,
                                 activeColor: Colors.white,
                                 inactiveTrackColor: Colors.white,
-                                thumbColor:
-                                    const MaterialStatePropertyAll(Colors.black),
+                                thumbColor: const MaterialStatePropertyAll(
+                                    Colors.black),
                                 trackOutlineColor:
-                                    const MaterialStatePropertyAll(Colors.black),
+                                    const MaterialStatePropertyAll(
+                                        Colors.black),
                                 thumbIcon: MaterialStatePropertyAll(Icon(
                                   Icons.power_settings_new,
                                   color: widget.mode == 1
@@ -250,9 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   decoration: BoxDecoration(
                                     color: widget.connected
                                         ? themeColor
-                                        : widget.connecting
-                                            ? Colors.blueGrey
-                                            : Colors.redAccent,
+                                        : Colors.redAccent,
 
                                     //Color(0xFF5d9451),
                                     borderRadius: BorderRadius.circular(5),
@@ -263,9 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Text(
                                       widget.connected
                                           ? "Connected"
-                                          : widget.connecting
-                                              ? "Connecting"
-                                              : "Disconnected",
+                                          : "Disconnected",
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                           color: Colors.white),
