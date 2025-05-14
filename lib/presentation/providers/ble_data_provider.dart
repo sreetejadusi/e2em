@@ -13,10 +13,10 @@ class BLEDataProvider with ChangeNotifier {
     try {
       final data = {
         'vehicleID':list[0],
-        'km':list[1],
-        'batteryPercentage':list[2],
-        'a':list[3],
-        'b':list[4],
+        'km':list[2],
+        'batteryPercentage':list[3],
+        'a':list[4],
+        'b':list[5],
         'timestamp':DateTime.now().toIso8601String(),
       };
 

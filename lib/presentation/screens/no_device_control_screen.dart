@@ -64,7 +64,6 @@ class _NoDeviceControlScreenState extends State<NoDeviceControlScreen>
     return HomeScreen(
       hasDevice: false,
       deviceName: "",
-      connecting: false,
       connected: false,
       connect: () {},
       disconnect: () {},

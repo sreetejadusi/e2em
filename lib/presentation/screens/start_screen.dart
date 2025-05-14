@@ -15,8 +15,9 @@ import 'package:ezing/presentation/screens/profile_screen.dart';
 import 'package:ezing/presentation/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_blue_elves/flutter_blue_elves.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Start extends StatefulWidget {
   const Start({Key? key}) : super(key: key);
@@ -27,51 +28,32 @@ class Start extends StatefulWidget {
 
 class _StartState extends State<Start> {
   bool isLoading = false;
-
   load() async {
     setState(() {
       isLoading = true;
     });
     BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
-    // bdp.resetName();
     BluetoothProvider bp = context.read<BluetoothProvider>();
     DataProvider dp = context.read<DataProvider>();
     SavedDevicesProvider sdp = context.read<SavedDevicesProvider>();
     UserDataProvider udp = context.read<UserDataProvider>();
+    bdp.lastDeviceInit();
+    bdp.changeTabIndex(0);
     sdp.init();
-    dp.autoConnectInit();
-
     await MongoDBConnection.mongoDB.init();
     await udp.syncUserData();
     udp.getUserData();
-
     await bdp.lastDeviceInit();
     Future.delayed(const Duration(seconds: 0), () async {
       await bp.check(context);
     });
-    Future.delayed(const Duration(milliseconds: 1500), () async {
-      // bdp.connectedDevice!.disConnect();
-      if (bp.gpsOn && bp.bluetoothOn && bdp.connectedDevice == null) {
-        // bdp.scan(context);
-        // bdp.connectToLastDevice(context);
-      }
-      // if(dp.autoConnect){
-      // }
-    });
-
     bdp.changeTabIndex(1);
-    Timer.periodic(const Duration(milliseconds: 1000), (timer) async {
+    Timer.periodic(Duration(seconds: 5), (timer) {
       if (bdp.connectedDevice == null) {
+        print('CALLING SCAN');
         bdp.scan(context);
       }
-
-      if (bdp.connectedDevice != null &&
-          bdp.connectedDevice!.state == DeviceState.disconnected &&
-          bdp.connectedDevice!.state != DeviceState.connecting) {
-        bdp.connectedDevice!.connect();
-      }
     });
-
     setState(() {
       isLoading = false;
     });
