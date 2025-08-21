@@ -10,10 +10,6 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BatterySwapProvider with ChangeNotifier {
-  final DbCollection _batteriesCollection = mongoDB.db.collection('batteries');
-  final DbCollection _swapStationsCollection =
-      mongoDB.db.collection('swap_stations');
-  final DbCollection _usersCollection = mongoDB.db.collection('users');
   final BluetoothDevicesProvider _bleProvider;
   // final BLEDataProvider _bleDataProvider;
   final BluetoothProvider _bluetoothProvider;
@@ -37,6 +33,9 @@ class BatterySwapProvider with ChangeNotifier {
   }
 
   Future<bool> isUserNearSwapStation(String userId) async {
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final _swapStationsCollection = (await MongoDBConnection.instance.getDb()).collection('swap_stations');
+
     try {
       final userDocument = await _usersCollection.findOne({'phone': userId});
       if (userDocument == null || userDocument['station'] == null) return false;
@@ -74,7 +73,7 @@ class BatterySwapProvider with ChangeNotifier {
       return false;
     }
 
-    if (!_bluetoothProvider.bluetoothOn) {
+    if (!_bluetoothProvider.isBluetoothOn) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Bluetooth is not enabled"),
@@ -110,6 +109,7 @@ class BatterySwapProvider with ChangeNotifier {
 
   Future<bool> swapBattery(String userId, String oldBatteryId,
       String newBatteryId, BuildContext context) async {
+    final _batteriesCollection = (await MongoDBConnection.instance.getDb()).collection('batteries');
     try {
       if (!await canSwapBattery(userId, context)) return false;
 

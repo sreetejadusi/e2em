@@ -4,11 +4,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 class SwapStationProvider with ChangeNotifier {
-  final DbCollection _swapStationsCollection =
-      mongoDB.db.collection('swap_stations');
-  final DbCollection _usersCollection = mongoDB.db.collection('users');
 
   Future<Map<String, dynamic>?> getAssignedSwapStation(String phone) async {
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final _swapStationsCollection = (await MongoDBConnection.instance.getDb()).collection('swap_stations');
+
     try {
       final userDocument = await _usersCollection.findOne({'phone': phone});
       if (userDocument == null) {

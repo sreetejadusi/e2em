@@ -26,7 +26,7 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await mongoDB.init();
+  await mongoDB.ensureConnection();
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (_) => BluetoothProvider()),
     ChangeNotifierProvider(create: (_) => BluetoothDevicesProvider()),
@@ -95,7 +95,7 @@ class _EntryState extends State<Entry> {
   void initState() {
     checkInternetConnectivity().then((value) async {
       if (value) {
-        await mongoDB.init();
+        await mongoDB.ensureConnection();
         UserDataProvider user = context.read<UserDataProvider>();
         if(FirebaseAuth.instance.currentUser != null) {
           await user.getUserData();

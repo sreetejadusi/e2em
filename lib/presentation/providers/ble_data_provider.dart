@@ -1,23 +1,25 @@
-
 // ignore_for_file: collection_methods_unrelated_type
 
 import 'package:ezing/data/datasource/mongodb.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BLEDataProvider with ChangeNotifier {
-  final DbCollection _bleDataCollection = mongoDB.db.collection('ble_data');
   static const int _maxHistorySize = 100;
 
   Future<void> logBLEData(List list) async {
+    final _bleDataCollection = (await MongoDBConnection.instance.getDb()).collection('ble_data');
+    final vehicle =
+        (await SharedPreferences.getInstance()).getString('vehicle');
     try {
       final data = {
-        'vehicleID':list[0],
-        'km':list[2],
-        'batteryPercentage':list[3],
-        'a':list[4],
-        'b':list[5],
-        'timestamp':DateTime.now().toIso8601String(),
+        'vehicleID': vehicle,
+        'km': list[2],
+        'batteryPercentage': list[3],
+        'a': list[4],
+        'b': list[5],
+        'timestamp': DateTime.now().toIso8601String(),
       };
 
       final deviceDocument =

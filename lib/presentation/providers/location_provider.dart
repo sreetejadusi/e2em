@@ -5,7 +5,6 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'package:geocoding/geocoding.dart'; 
 
 class LocationProvider with ChangeNotifier {
-  final DbCollection _locationHistoryCollection = mongoDB.db.collection('location_history');
   static const int _maxHistorySize = 100; 
 
   
@@ -34,6 +33,8 @@ class LocationProvider with ChangeNotifier {
   
   Future<void> _pushLocationToDatabase(
       Position position, String userId) async {
+    final _locationHistoryCollection =
+        (await MongoDBConnection.instance.getDb()).collection('location_history');
     try {
       String placeName =
           await _getPlaceName(position.latitude, position.longitude);

@@ -85,11 +85,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Spacer(),
                   Icon(
                     Icons.bluetooth,
-                    color: bp.bluetoothOn ? Colors.green : Colors.red,
+                    color: bp.adapterState == BluetoothAdapterState.on
+                        ? Colors.green
+                        : Colors.red,
                   ),
                   Icon(
                     Icons.location_on,
-                    color: bp.gpsPermission ? Colors.green : Colors.red,
+                    color: bp.hasPermissions ? Colors.green : Colors.red,
                   ),
                 ],
               ),

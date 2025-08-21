@@ -25,13 +25,10 @@ class BluetoothDevicesProvider with ChangeNotifier {
   String? get connectedDeviceName => _connectedDeviceName;
   String? _connectedDeviceName;
 
-  int get tabIndex => _tabIndex;
-  int _tabIndex = 1;
-
-  Future<void> changeTabIndex(int i) async {
-    _tabIndex = i;
-    notifyListeners();
-  }
+  // void changeTabIndex(int i) async {
+  //   _tabIndex = i;
+  //   notifyListeners();
+  // }
 
   Future<void> changeConnectedDevice(BluetoothDevice? d, String name) async {
     _connectedDevice = d;
@@ -102,7 +99,6 @@ class BluetoothDevicesProvider with ChangeNotifier {
       });
     } catch (e) {
       _scanning = false;
-      scan(context);
       notifyListeners();
       print('Scan failed: $e');
     }

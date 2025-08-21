@@ -28,6 +28,8 @@ class Start extends StatefulWidget {
 
 class _StartState extends State<Start> {
   bool isLoading = false;
+  int currentTabIndex = 1;
+
   load() async {
     setState(() {
       isLoading = true;
@@ -38,18 +40,16 @@ class _StartState extends State<Start> {
     SavedDevicesProvider sdp = context.read<SavedDevicesProvider>();
     UserDataProvider udp = context.read<UserDataProvider>();
     bdp.lastDeviceInit();
-    bdp.changeTabIndex(0);
     sdp.init();
-    await MongoDBConnection.mongoDB.init();
+    await MongoDBConnection.instance.ensureConnection();
     await udp.syncUserData();
     udp.getUserData();
     await bdp.lastDeviceInit();
-    Future.delayed(const Duration(seconds: 0), () async {
-      await bp.check(context);
-    });
-    bdp.changeTabIndex(1);
-    Timer.periodic(Duration(seconds: 5), (timer) {
-      if (bdp.connectedDevice == null) {
+    await bp.checkAndRequestPermissions();
+    Timer.periodic(Duration(seconds: 5), (timer) async {
+      if ((bdp.connectedDevice == null ||
+              bdp.connectedDevice!.isDisconnected) &&
+          bp.isBluetoothOn) {
         print('CALLING SCAN');
         bdp.scan(context);
       }
@@ -59,50 +59,93 @@ class _StartState extends State<Start> {
     });
   }
 
+  late final AppLifecycleListener _listener;
+
   @override
   void initState() {
-    load();
-    SystemChannels.textInput.invokeMethod('TextInput.hide');
     super.initState();
+    load(); // Your existing load logic
+
+    // Setup the lifecycle listener
+    _listener = AppLifecycleListener(
+      onStateChange: _onStateChanged,
+    );
+  }
+
+  void _onStateChanged(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // The app has come back to the foreground.
+        // Proactively reconnect to minimize delay for the user's first action.
+        print("APP STATE: Resumed. Reconnecting to MongoDB...");
+        MongoDBConnection.instance.ensureConnection();
+        break;
+      case AppLifecycleState.paused:
+        // The app is going to the background.
+        // You could optionally close the connection here to free up resources.
+        print("APP STATE: Paused.");
+        // MongoDbManager.instance.close(); // Optional
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        // Handle other states if needed
+        break;
+    }
   }
 
   @override
   void dispose() {
+    _listener.dispose();
+    MongoDBConnection.instance.close(); // Clean up on final dispose
     super.dispose();
   }
 
-  String csKey = "0";
+  // This key logic is what you identified as a problem area.
+  // It forces the ControlScreen to rebuild completely.
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
     BluetoothProvider bp = context.watch<BluetoothProvider>();
     BluetoothDevicesProvider bdp = context.watch<BluetoothDevicesProvider>();
-    List<Widget> tabs = [
-      const ProfileScreen(),
-      if (bdp.connectedDevice != null) ...[
-        ControlScreen(
-          device: bdp.connectedDevice!,
-          rebuild: (String key) {
-            setState(() {
-              csKey = key;
-            });
-          },
-          key: Key(csKey),
-        ),
-        // StreamScreen()
-      ] else ...[
-        const NoDeviceControlScreen()
-      ],
-      const SettingScreen(),
-    ];
+
+    // The list of widgets for the tabs is now defined directly inside the IndexedStack's children.
+    // This is the main change to fix the state preservation issue.
+    void onTabTapped(int index) {
+      setState(() {
+        currentTabIndex = index;
+      });
+    }
+
     return SafeArea(
       child: Scaffold(
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  Expanded(child: tabs[bdp.tabIndex]),
+            // SOLUTION: Use IndexedStack to preserve the state of each tab.
+            // IndexedStack keeps all its children in the widget tree, but only shows the one
+            // at the current 'index'. This prevents the screens from being destroyed and
+            // recreated every time you switch tabs.
+            : IndexedStack(
+                index: currentTabIndex,
+                children: <Widget>[
+                  // Tab 0: Profile
+                  const ProfileScreen(),
+
+                  // Tab 1: Control Screen (logic handled internally)
+                  // The conditional logic is now here. IndexedStack will show one of these
+                  // and keep its state. When `bdp.connectedDevice` changes, this will
+                  // swap the widget, but the state of other tabs remains safe.
+                  if (bdp.connectedDevice != null) ...[
+                    ControlScreen(
+                      device: bdp.connectedDevice!,
+                    ),
+                  ] else ...[
+                    const NoDeviceControlScreen()
+                  ],
+
+                  // Tab 2: Settings
+                  const SettingScreen(),
                 ],
               ),
         bottomNavigationBar: Container(
@@ -114,19 +157,12 @@ class _StartState extends State<Start> {
               borderRadius: BorderRadius.circular(20.0),
             ),
             child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: const Radius.circular(20),
-                topRight: const Radius.circular(20),
-                bottomLeft: const Radius.circular(20),
-                bottomRight: const Radius.circular(20),
-              ),
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
               child: Container(
                 color: Colors.black,
-                // color: Color(0xFF2a2a2a),
                 child: SizedBox(
-                  //height: 70,
                   child: BottomNavigationBar(
-                    currentIndex: bdp.tabIndex,
+                    currentIndex: currentTabIndex,
                     showUnselectedLabels: false,
                     onTap: onTabTapped,
                     elevation: 0,
@@ -134,7 +170,6 @@ class _StartState extends State<Start> {
                     unselectedItemColor: const Color(0xFFFCFDF7),
                     showSelectedLabels: false,
                     iconSize: 30,
-                    //selectedItemColor: firstAccentColor,
                     backgroundColor: Colors.black54,
                     items: [
                       const BottomNavigationBarItem(
@@ -158,14 +193,5 @@ class _StartState extends State<Start> {
         ),
       ),
     );
-  }
-
-  void onTabTapped(int index) {
-    BluetoothDevicesProvider bdp = context.read<BluetoothDevicesProvider>();
-    // if (index == 0) {
-    //   bdp.changeConnectedDevice(null, "--------");
-    // } else {}
-    setState(() {});
-    bdp.changeTabIndex(index);
   }
 }

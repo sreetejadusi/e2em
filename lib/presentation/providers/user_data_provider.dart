@@ -52,9 +52,8 @@ class UserDataProvider with ChangeNotifier {
 
   Future<void> syncUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final result = await mongoDB.db
-        .collection('users')
-        .findOne(where.eq('phone', _user!.phone));
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final result = await _usersCollection.findOne(where.eq('phone', _user!.phone));
     if (result != null) {
       _user = UserModel.fromMap(result);
       await prefs.setString('name', _user!.name);
@@ -72,8 +71,8 @@ class UserDataProvider with ChangeNotifier {
 
   Future<bool> loginUser(String phone) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final result =
-        await mongoDB.db.collection('users').findOne(where.eq('phone', phone));
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final result = await _usersCollection.findOne(where.eq('phone', phone));
     if (result != null) {
       _user = UserModel.fromMap(result);
       await prefs.setString('name', _user!.name);
@@ -101,9 +100,9 @@ class UserDataProvider with ChangeNotifier {
 
   Future<bool> checkFlag() async {
     if (_user == null) return true;
-    final result = await mongoDB.db
-        .collection('users')
-        .findOne(where.eq('phone', _user!.phone));
+
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final result = await _usersCollection.findOne(where.eq('phone', _user!.phone));
     return result?['flag'] ?? true;
   }
 
@@ -165,7 +164,9 @@ class UserDataProvider with ChangeNotifier {
 
   Future<bool> registerUser(String name, String email, String phone) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final result = await mongoDB.db.collection('users').insertOne({
+
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final result = await _usersCollection.insertOne({
       'name': name,
       'email': email,
       'phone': phone,
@@ -187,8 +188,8 @@ class UserDataProvider with ChangeNotifier {
   }
 
   Future<bool> doesPhoneExists(String phone) async {
-    final result =
-        await mongoDB.db.collection('users').findOne(where.eq('phone', phone));
+    final _usersCollection = (await MongoDBConnection.instance.getDb()).collection('users');
+    final result = await _usersCollection.findOne(where.eq('phone', phone));
     return result != null;
   }
 }

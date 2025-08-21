@@ -17,9 +17,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ControlScreen extends StatefulWidget {
   final BluetoothDevice device;
-  final Function(String key) rebuild;
+  // final Function(String key) rebuild;
 
-  const ControlScreen({super.key, required this.rebuild, required this.device});
+  const ControlScreen({super.key, required this.device});
 
   @override
   State<ControlScreen> createState() => _ControlScreenState();
